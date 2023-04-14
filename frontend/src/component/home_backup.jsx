@@ -1,17 +1,12 @@
-// import React from 'react';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
-import { Grid } from "@material-ui/core";
-import Card from '@mui/material/Card';
 
 function Home () {
   const token = localStorage.getItem('token');
-  const [newGameName, setNewGameName] = useState('');
-  const [gamesList, setGamesList] = useState([]);
-  const [fetchError, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  console.log(Array.isArray(gamesList));
+  const [newGameName, setNewGameName] = React.useState('');
+  const [fetchError, setError] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState('');
   const Nav = () => {
     return (
       <>
@@ -88,23 +83,7 @@ function Home () {
     }
   }
 
-  function GamesList ({ gamesList }) {
-    console.log(gamesList);
-    return (
-      <div>
-        <h2>Games List</h2>
-        {gamesList.map(game => (
-          <div key={game.id}>
-            {<div>{game.name}</div>}
-            <div><img src={game.thumbnail} alt={game.name} /></div>
-            {game.questions.length > 0 ? <div>{game.questions.length}</div> : null}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchGames () {
       await fetch('http://localhost:5005/admin/quiz', {
         method: 'GET',
@@ -127,39 +106,106 @@ function Home () {
           return res.json()
         })
         .then(data => {
-          console.log('List of quizzes', data.quizzes);
-          setGamesList(data.quizzes);
+          setGames(data);
         })
     }
     fetchGames();
   }, [token]);
+
+  const GamesList = () => {
+    return (
+      <>
+        {games.map(game => (
+          <div key={game.id}>
+            <div><img src={game.thumbnail}></img></div>
+            <div>{game.name}</div>
+            <div>{game.questions.length}</div>
+          </div>
+        ))}
+      </>
+    );
+  }
+
+
+  /* const GameList = () => {
+    let quizesData;
+    fetch('http://localhost:5005/admin/quiz', {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .catch((error) => {
+        console.log(error);
+      })
+      .then((res) => {
+        if (!res.ok) {
+          setError(true);
+          setErrorMsg(res.json().error);
+        } else {
+          setError(false);
+          setErrorMsg('');
+        }
+        return res.json()
+      })
+      .then(data => {
+        const final = data.map((metaQuizes) => {
+          fetch('http://localhost:5005/admin/quiz', {
+            method: 'GET',
+            headers: {
+              'Content-type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(metaQuizes.id.json)
+          })
+            .then((quizGame) => {
+              const quizData = quizGame.json()
+              if (!quizGame.ok) {
+                console.log(quizData.error);
+                return;
+              }
+              quizesData += quizData.map((quiz) => {
+                return (
+                  <div>
+                    <div><img src={quiz.thumbnail}></img></div>
+                    <div>{quiz.name}</div>
+                    <div>{quiz.questions.length}</div>
+                  </div>
+                )
+              })
+            })
+        })
+      })
+    return (
+      <>
+        <div>{final}</div>
+      </>
+    )
+  } */
 
   return (
     <>
       <Nav />
       {fetchError
         ? (<>
-          <div style={{ display: 'block', textAlign: 'center', color: 'red' }}>{errorMsg}</div>
+          <div style={ { display: 'block', textAlign: 'center', color: 'red' } }>{errorMsg}</div>
         </>
           )
         : (
-          <></>
+        <></>
           )
       }
       <Tooltip />
       <div>
-        <div>Create new game: <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)} /></div>
+        <div>Create new game: <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)}/></div>
         <button onClick={createNewGame}>Submit</button>
       </div>
-      <div style={{ display: 'flex', textAlign: 'center', justifyContent: 'center' }}>
-        <div style={{ display: 'block', width: '25%' }}>Name</div>
-        <div style={{ display: 'block', width: '25%' }}>questions</div>
-        <div style={{ display: 'block', width: '25%' }}>total time</div>
+      <div style={ { display: 'flex', textAlign: 'center', justifyContent: 'center' } }>
+        <div style={ { display: 'block', width: '25%' } }>Name</div>
+        <div style={ { display: 'block', width: '25%' } }>questions</div>
+        <div style={ { display: 'block', width: '25%' } }>total time</div>
       </div>
-      <GamesList gamesList={gamesList} setGamesList={setGamesList} />
-      <Grid container> 
-        <Card />
-      </Grid>
     </>
   )
 }
