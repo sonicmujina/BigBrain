@@ -85,7 +85,7 @@ function SignUp () {
     }
     <div style={ { display: 'block', textAlign: 'center' } }>
         <div>Email: <input value = {email} onChange={(e) => setEmail(e.target.value)}/></div>
-        <div>Password: <input value = {password} onChange={(e) => setPassword(e.target.value)}/></div>
+        <div>Password: <input type = "password" value = {password} onChange={(e) => setPassword(e.target.value)}/></div>
         <div>Name: <input value = {name} onChange={(e) => setName(e.target.value)}/></div>
         <button onClick = {checkFilled}>Submit</button>
     </div>
