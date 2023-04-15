@@ -30,7 +30,9 @@ export default function Home () {
         }
       });
       const data = await res.json();
-      setGamesList(data.quizzes);
+      const sortedQuizzes = data.quizzes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setGamesList(sortedQuizzes);
+      // setGamesList(data.quizzes);
     }
     fetchGames();
   }, [token, submitted]);
@@ -84,8 +86,8 @@ export default function Home () {
         throw new Error('Failed to create new game.');
       }
       const data = await res.json();
-      const newGame = { id: data.quiz_id, name: newGameName };
-      setGamesList(prevGamesList => [...prevGamesList, newGame]);
+      const newGame = { id: data.quiz_id, name: newGameName, createdAt: new Date().toISOString() };
+      setGamesList(prevGamesList => [...prevGamesList, newGame].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       setNewGameName('');
       setSubmitted(true);
       setError(false);
@@ -95,7 +97,7 @@ export default function Home () {
       setErrorMsg(error.message);
     }
   }
-  // // Memoize GamesList component so that it only re-renders when its dependencies change i.e. gameList
+  // Memoize GamesList component so that it only re-renders when its dependencies change i.e. gameList
   const MemoizedGamesList = useCallback(({ gamesList }) => {
     if (!gamesList || gamesList.length === 0) {
       return <div>Error: Games list not found</div>;
@@ -105,14 +107,13 @@ export default function Home () {
       <Grid container spacing={4} className={classes.gridContainer}>
         {gamesList.map((game) => (
           <Grid item xs={12} sm={6} md={4} key={`${game.id}+${game.name}`}>
-            <Link to={`/editGame/${game.id}`} style={{ textDecoration: 'none' }}>
-              <GameCard
-                title={game.name}
-                numQuestions={game.questions ? game.questions.length : 0}
-                thumbnail={game.thumbnail}
-                totalTime={game.total_time}
-              />
-            </Link>
+            <GameCard
+              gameId={game.id}
+              title={game.name}
+              numQuestions={game.questions ? game.questions.length : 0}
+              thumbnail={game.thumbnail}
+              totalTime={game.total_time}
+            />
           </Grid>
         ))}
       </Grid>
@@ -139,5 +140,3 @@ export default function Home () {
     </>
   )
 }
-
-// export default Home;
