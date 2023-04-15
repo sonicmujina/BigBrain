@@ -1,17 +1,40 @@
-// import React from 'react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Popup from 'reactjs-popup';
-import { Grid } from "@material-ui/core";
-import Card from '@mui/material/Card';
+import GameCard from './GameCard';
+import { Grid } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 
-function Home () {
+const useStyles = makeStyles({
+  gridContainer: {
+    paddingLeft: '40px',
+    paddingRight: '40px'
+  }
+});
+
+export default function Home () {
   const token = localStorage.getItem('token');
   const [newGameName, setNewGameName] = useState('');
   const [gamesList, setGamesList] = useState([]);
   const [fetchError, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  console.log(Array.isArray(gamesList));
+  const [submitted, setSubmitted] = useState(false);
+  const classes = useStyles();
+  // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
+  useEffect(() => {
+    async function fetchGames () {
+      const res = await fetch('http://localhost:5005/admin/quiz', {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      setGamesList(data.quizzes);
+    }
+    fetchGames();
+  }, [token, submitted]);
+
   const Nav = () => {
     return (
       <>
@@ -20,21 +43,6 @@ function Home () {
       </>
     )
   }
-
-  const Tooltip = () => (
-    <Popup
-      trigger={open => (
-        <button className="button">{open ? 'Cancel' : 'Create New Game'}</button>
-      )}
-      position="right"
-    >
-      <div>
-        <div>Name of the game:</div>
-        <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)}></input>
-        <button onClick = {createNewGame}>Submit</button>
-      </div>
-    </Popup>
-  );
 
   async function logout () {
     console.log(token);
@@ -58,81 +66,56 @@ function Home () {
     localStorage.removeItem('token');
   }
 
+  // Function to handle creating a new game
   async function createNewGame () {
-    const payload = {
-      name: newGameName
-    }
-    console.log('creating new game ' + newGameName);
-
-    const res = await fetch('http://localhost:5005/admin/quiz/new', {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    })
-      .catch((error) => {
-        console.log(error);
-      })
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.log(data.error);
-      setError(true);
-      setErrorMsg(data.error);
-    } else {
-      setError(false);
-      setErrorMsg('');
-    }
-  }
-
-  function GamesList ({ gamesList }) {
-    console.log(gamesList);
-    return (
-      <div>
-        <h2>Games List</h2>
-        {gamesList.map(game => (
-          <div key={game.id}>
-            {<div>{game.name}</div>}
-            <div><img src={game.thumbnail} alt={game.name} /></div>
-            {game.questions.length > 0 ? <div>{game.questions.length}</div> : null}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  useEffect(() => {
-    async function fetchGames () {
-      await fetch('http://localhost:5005/admin/quiz', {
-        method: 'GET',
+    try {
+      const payload = {
+        name: newGameName
+      };
+      const res = await fetch('http://localhost:5005/admin/quiz/new', {
+        method: 'POST',
         headers: {
           'Content-type': 'application/json',
           Authorization: `Bearer ${token}`
-        }
-      })
-        .catch((error) => {
-          console.log(error);
-        })
-        .then((res) => {
-          if (!res.ok) {
-            setError(true);
-            setErrorMsg(res.json().error);
-          } else {
-            setError(false);
-            setErrorMsg('');
-          }
-          return res.json()
-        })
-        .then(data => {
-          console.log('List of quizzes', data.quizzes);
-          setGamesList(data.quizzes);
-        })
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        throw new Error('Failed to create new game.');
+      }
+      const data = await res.json();
+      const newGame = { id: data.quiz_id, name: newGameName };
+      setGamesList(prevGamesList => [...prevGamesList, newGame]);
+      setNewGameName('');
+      setSubmitted(true);
+      setError(false);
+      setErrorMsg('');
+    } catch (error) {
+      setError(true);
+      setErrorMsg(error.message);
     }
-    fetchGames();
-  }, [token]);
+  }
+  // // Memoize GamesList component so that it only re-renders when its dependencies change i.e. gameList
+  const MemoizedGamesList = useCallback(({ gamesList }) => {
+    if (!gamesList || gamesList.length === 0) {
+      return <div>Error: Games list not found</div>;
+    }
+
+    return (
+      <Grid container spacing={4} className={classes.gridContainer}>
+        {gamesList.map((game) => (
+          <Grid item xs={12} sm={6} md={4} key={`${game.id}-${game.name}`}>
+            <GameCard
+              title={game.name}
+              numQuestions={game.questions ? game.questions.length : 0}
+              thumbnail={game.thumbnail}
+              totalTime={game.total_time}
+            />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  }, [gamesList]);
 
   return (
     <>
@@ -146,22 +129,13 @@ function Home () {
           <></>
           )
       }
-      <Tooltip />
       <div>
         <div>Create new game: <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)} /></div>
         <button onClick={createNewGame}>Submit</button>
       </div>
-      <div style={{ display: 'flex', textAlign: 'center', justifyContent: 'center' }}>
-        <div style={{ display: 'block', width: '25%' }}>Name</div>
-        <div style={{ display: 'block', width: '25%' }}>questions</div>
-        <div style={{ display: 'block', width: '25%' }}>total time</div>
-      </div>
-      <GamesList gamesList={gamesList} setGamesList={setGamesList} />
-      <Grid container> 
-        <Card />
-      </Grid>
+      <MemoizedGamesList gamesList={gamesList} />
     </>
   )
 }
 
-export default Home;
+// export default Home;

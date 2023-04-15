@@ -163,7 +163,6 @@ export const getQuizzesFromAdmin = email => quizLock((resolve, reject) => {
     name: quizzes[key].name,
     thumbnail: quizzes[key].thumbnail,
     owner: quizzes[key].owner,
-    questions: quizzes[key].questions, // added code  
     active: getActiveSessionIdFromQuizId(key),
     oldSessions: getInactiveSessionsIdFromQuizId(key),
   })));
