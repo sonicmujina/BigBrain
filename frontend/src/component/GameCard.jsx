@@ -11,7 +11,14 @@ export default function GameCard (props) {
   const { keyId, title, numQuestions, thumbnail, totalTime } = props;
 
   return (
-    <Card key={keyId} sx={{ maxWidth: 345 }}>
+    <Card key={keyId} sx={{
+      maxWidth: 345,
+      transition: '0.3s',
+      '&:hover': {
+        background: '#f5f5f5',
+        boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.2)'
+      }
+    }}>
       <CardMedia
         component="img"
         alt={title}
@@ -31,7 +38,7 @@ export default function GameCard (props) {
       </CardContent>
       <CardActions>
         <Button size="small">Edit</Button>
-        {/* <Button size="small">Learn More</Button> */}
+        <Button size="small">Delete Game</Button>
       </CardActions>
     </Card>
   );

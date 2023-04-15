@@ -8,7 +8,7 @@ const useStyles = makeStyles({
   gridContainer: {
     paddingLeft: '40px',
     paddingRight: '40px'
-  }
+  },
 });
 
 export default function Home () {
@@ -19,7 +19,7 @@ export default function Home () {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const classes = useStyles();
-  // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
+  // Fetch the list of games on component mount and whenever the token changes or user clicks create new game asubmit btn
   useEffect(() => {
     async function fetchGames () {
       const res = await fetch('http://localhost:5005/admin/quiz', {
@@ -104,13 +104,15 @@ export default function Home () {
     return (
       <Grid container spacing={4} className={classes.gridContainer}>
         {gamesList.map((game) => (
-          <Grid item xs={12} sm={6} md={4} key={`${game.id}-${game.name}`}>
-            <GameCard
-              title={game.name}
-              numQuestions={game.questions ? game.questions.length : 0}
-              thumbnail={game.thumbnail}
-              totalTime={game.total_time}
-            />
+          <Grid item xs={12} sm={6} md={4} key={`${game.id}+${game.name}`}>
+            <Link to={`/editGame/${game.id}`} style={{ textDecoration: 'none' }}>
+              <GameCard
+                title={game.name}
+                numQuestions={game.questions ? game.questions.length : 0}
+                thumbnail={game.thumbnail}
+                totalTime={game.total_time}
+              />
+            </Link>
           </Grid>
         ))}
       </Grid>
