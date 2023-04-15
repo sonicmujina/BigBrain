@@ -19,6 +19,7 @@ export default function Home () {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const classes = useStyles();
+
   // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
   useEffect(() => {
     async function fetchGames () {

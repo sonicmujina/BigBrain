@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import ErrorMsg from './errorMsg';
+import { Alert } from '@mui/material';
 
 function SignUp () {
   const [email, setEmail] = React.useState('');
@@ -73,16 +73,18 @@ function SignUp () {
   return (
     <>
     <Nav />
-    <div style={ { display: 'flex', justifyContent: 'center', alignItems: 'center' } }>Sign Up</div>
     {fetchError
       ? (<>
-          <div style={ { display: 'block', textAlign: 'center', color: 'red' } }>{errorMsg}</div>
+          <Alert variant="filled" severity="error">
+            {errorMsg}
+          </Alert>
       </>
         )
       : (
       <></>
         )
     }
+    <div style={ { display: 'flex', justifyContent: 'center', alignItems: 'center' } }>Sign Up</div>
     <div style={ { display: 'block', textAlign: 'center' } }>
         <div>Email: <input value = {email} onChange={(e) => setEmail(e.target.value)}/></div>
         <div>Password: <input type = "password" value = {password} onChange={(e) => setPassword(e.target.value)}/></div>
