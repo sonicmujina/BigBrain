@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import Popup from 'reactjs-popup';
+import { Alert } from '@mui/material';
 
 function Login () {
   const [email, setEmail] = React.useState('');
@@ -52,10 +52,9 @@ function Login () {
     const data = await res.json();
 
     if (!res.ok) {
-      console.log(data.error);
       setError(true);
       setErrorMsg(data.error);
-      return;
+      throw new Error(data.error);
     }
 
     localStorage.setItem('token', data.token);
@@ -65,19 +64,21 @@ function Login () {
   return (
       <>
       <Nav />
-      <div style={ { display: 'flex', justifyContent: 'center', alignItems: 'center' } }>Sign in</div>
       {fetchError
         ? (<>
-          <div style={ { display: 'block', textAlign: 'center', color: 'red' } }>{errorMsg}</div>
+          <Alert variant="filled" severity="error">
+            {errorMsg}
+          </Alert>
         </>
           )
         : (
         <></>
           )
       }
+      <div style={ { display: 'flex', justifyContent: 'center', alignItems: 'center' } }>Sign in</div>
       <div style={ { display: 'block', textAlign: 'center' } }>
         <div>Email: <input value={email} onChange={(e) => setEmail(e.target.value)}/></div>
-        <div>Password: <input value={password} onChange={(e) => setPassword(e.target.value)}/></div>
+        <div>Password: <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}/></div>
         <button onClick={checkFilled}>Submit</button>
       </div>
   </>

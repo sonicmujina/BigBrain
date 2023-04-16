@@ -169,6 +169,7 @@ export const getQuizzesFromAdmin = email => quizLock((resolve, reject) => {
 });
 
 export const addQuiz = (name, email) => quizLock((resolve, reject) => {
+  console.log(name);
   if (name === undefined) {
     return reject(new InputError('Must provide a name for new quiz'));
   } else {
