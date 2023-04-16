@@ -4,6 +4,7 @@ import GameCard from './GameCard';
 import { Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Alert } from '@mui/material';
+import GameStartPop, { handleClickOpen } from './GameStartPop';
 
 const useStyles = makeStyles({
   gridContainer: {
@@ -21,6 +22,8 @@ export default function Home () {
   const [errorMsg, setErrorMsg] = useState('');
   const [fetchNoti, setNoti] = useState(false);
   const [notiMsg, setNotiMsg] = useState('');
+  const [startGameName, setStartGameName] = useState('');
+  const [startGameLink, setStartGameLink] = useState('');
   const classes = useStyles();
 
   // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
@@ -116,7 +119,6 @@ export default function Home () {
     if (!gamesList || gamesList.length === 0) {
       return <div>Error: Games list not found</div>;
     }
-    console.log(gamesList);
 
     return (
       <Grid container spacing={4} className={classes.gridContainer}>
@@ -129,6 +131,7 @@ export default function Home () {
               thumbnail={game.thumbnail}
               totalTime={game.total_time}
               deleteGame={deleteGame}
+              startGame={startGame}
             />
           </Grid>
         ))}
@@ -158,6 +161,56 @@ export default function Home () {
         prevState.filter((prevItem) => prevItem.id !== gameID)
       );
     }
+  }
+
+  async function startGame (gameID, title) {
+    hideNoti();
+    const res = await fetch('http://localhost:5005/admin/quiz/' + gameID + '/start', {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(true);
+      setErrorMsg(data.error);
+      throw new Error(data.error);
+    } else {
+      const sessionRes = await fetch('http://localhost:5005/admin/quiz/' + gameID, {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const sessionData = await sessionRes.json();
+
+      if (!res.ok) {
+        setError(true);
+        setErrorMsg(data.error);
+        throw new Error(data.error);
+      } else {
+        const link = 'http://localhost:5005/play/join' + sessionData.active;
+        setStartGameLink(link);
+        setStartGameName(title);
+      }
+    }
+  }
+
+  const StartGamePop = ({ title, link }) => {
+    if (title.length === 0 || link.length === 0) {
+      return;
+    }
+    handleClickOpen();
+    return (
+      <GameStartPop
+        title={title}
+        link={link}
+      />
+    )
   }
 
   async function logout () {
@@ -219,6 +272,7 @@ export default function Home () {
         <button onClick={createNewGame}>Submit</button>
       </div>
       <MemoizedGamesList gamesList={gamesList} />
+      <StartGamePop title={startGameName} link={startGameLink}/>
     </>
   )
 }

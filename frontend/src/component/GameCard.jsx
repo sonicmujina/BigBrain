@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 export default function GameCard (props) {
-  const { keyId, title, numQuestions, thumbnail, totalTime, deleteGame } = props;
+  const { keyId, title, numQuestions, thumbnail, totalTime, deleteGame, startGame } = props;
 
   return (
     <Card key={keyId} sx={{ maxWidth: 345 }}>
@@ -32,6 +32,7 @@ export default function GameCard (props) {
       <CardActions>
         <Button size="small">Edit</Button>
         <Button size="small" onClick={() => deleteGame(keyId, title)}>Delete</Button>
+        <Button size="small" onClick={() => startGame(keyId, title)}>Start</Button>
         {/* <Button size="small">Learn More</Button> */}
       </CardActions>
     </Card>
