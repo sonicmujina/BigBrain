@@ -52,7 +52,7 @@ export default function Home () {
       getGameDetails(data.quizzes);
     }
     fetchGames();
-  }, [token, submitted]);
+  }, [token, submitted, gameStarted]);
 
   const Nav = () => {
     return (
@@ -139,6 +139,8 @@ export default function Home () {
               totalTime={game.total_time}
               deleteGame={deleteGame}
               startGame={startGame}
+              active={game.active}
+              stopGame={stopGame}
             />
           </Grid>
         ))}
@@ -202,21 +204,44 @@ export default function Home () {
       } else {
         console.log('starting game...');
         console.log(sessionData);
-        setGameStarted(true);
         setSessionId(sessionData.active);
-        setSessionName(sessionData.name)
+        setSessionName(sessionData.name);
         handleOpenLinkPopup();
       }
     }
   }
+
+  async function stopGame (gameID, title) {
+    hideNoti();
+    const res = await fetch('http://localhost:5005/admin/quiz/' + gameID + '/end', {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(true);
+      setErrorMsg(data.error === 'Quiz already has active session' ? 'Game is already in progress' : data.error);
+      throw new Error(data.error);
+    } else {
+      setSessionId('');
+      setSessionName(title);
+      handleOpenLinkPopup();
+    }
+  }
+
   const handleOpenLinkPopup = () => {
     console.log('setting status of linkpopup to TRUE');
     setOpenLinkPopup(true);
+    setGameStarted(!gameStarted);
   };
 
   const closeLinkPopup = () => {
     console.log('setting status of linkpop to FALSE');
     setOpenLinkPopup(false);
+    setGameStarted(!gameStarted);
   };
 
   async function logout () {
@@ -231,6 +256,7 @@ export default function Home () {
       .then((res) => {
         if (!res.ok) {
           console.log('403');
+          throw new Error(res.json().error);
         }
       })
       .catch((error) => {
