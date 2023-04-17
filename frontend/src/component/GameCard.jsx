@@ -9,7 +9,8 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 
 export default function GameCard (props) {
-  const { gameId, title, numQuestions, thumbnail, totalTime } = props;
+  // const { gameId, title, numQuestions, thumbnail, totalTime } = props;
+  const { keyId, title, numQuestions, thumbnail, totalTime, deleteGame, startGame } = props;
 
   return (
     <Card key={gameId} sx={{
@@ -40,10 +41,15 @@ export default function GameCard (props) {
         </CardContent>
       </Link>
       <CardActions>
+        
+        {/* <Button size="small">Delete Game</Button> */}
+        {/* <Button size="small">Edit</Button> */}
+        <Button size="small" onClick={() => deleteGame(keyId, title)}>Delete</Button>
+        <Button size="small" onClick={() => startGame(keyId, title)}>Start</Button>
         <Link to={`/editGame/${gameId}`} style={{ textDecoration: 'none' }}>
           <Button size="small">Edit</Button>
         </Link>
-        <Button size="small">Delete Game</Button>
+        {/* <Button size="small">Learn More</Button> */}
       </CardActions>
     </Card>
   );
