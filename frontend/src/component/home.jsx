@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import GameCard from './GameCard';
 import { Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import Nav from './Nav';
+// import Navbar from './NavBar';
 
 const useStyles = makeStyles({
   gridContainer: {
@@ -37,14 +39,14 @@ export default function Home () {
     fetchGames();
   }, [token, submitted]);
 
-  const Nav = () => {
-    return (
-      <>
-        <span><Link to='/' onClick={logout}> Logout</Link></span>
-        <hr></hr>
-      </>
-    )
-  }
+  // const Nav = () => {
+  //   return (
+  //     <>
+  //       <span><Link to='/' onClick={logout}> Logout</Link></span>
+  //       <hr></hr>
+  //     </>
+  //   )
+  // }
 
   async function logout () {
     console.log(token);
@@ -100,7 +102,7 @@ export default function Home () {
   // Memoize GamesList component so that it only re-renders when its dependencies change i.e. gameList
   const MemoizedGamesList = useCallback(({ gamesList }) => {
     if (!gamesList || gamesList.length === 0) {
-      return <div>Error: Games list not found</div>;
+      return <div>No games yet, create one!</div>;
     }
 
     return (
@@ -122,7 +124,7 @@ export default function Home () {
 
   return (
     <>
-      <Nav />
+      <Nav logout={logout} />
       {fetchError
         ? (<>
           <div style={{ display: 'block', textAlign: 'center', color: 'red' }}>{errorMsg}</div>
@@ -132,6 +134,8 @@ export default function Home () {
           <></>
           )
       }
+      {/* <Nav isLoggedIn={isLoggedIn} handleLogout={handleLogout} /> */}
+      {/* <Navbar isLoggedIn={isLoggedIn} handleLogout={handleLogout} fetchError={fetchError} errorMsg={errorMsg} /> */}
       <div>
         <div>Create new game: <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)} /></div>
         <button onClick={createNewGame}>Submit</button>
