@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import GameCard from './GameCard';
 import { Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import Nav from './Nav';
 import { Alert } from '@mui/material';
-import GameStartPop, { handleClickOpen } from './GameStartPop';
+import LinkPopup from './LinkPopup';
 
 const useStyles = makeStyles({
   gridContainer: {
@@ -23,8 +22,10 @@ export default function Home () {
   const [errorMsg, setErrorMsg] = useState('');
   const [fetchNoti, setNoti] = useState(false);
   const [notiMsg, setNotiMsg] = useState('');
-  const [startGameName, setStartGameName] = useState('');
-  const [startGameLink, setStartGameLink] = useState('');
+  const [gameStarted, setGameStarted] = useState(false);
+  const [sessionId, setSessionId] = useState('');
+  const [sessionName, setSessionName] = useState('');
+  const [openLinkPopup, setOpenLinkPopup] = useState(false);
   const classes = useStyles();
 
   // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
@@ -53,14 +54,14 @@ export default function Home () {
     fetchGames();
   }, [token, submitted]);
 
-  // const Nav = () => {
-  //   return (
-  //     <>
-  //       <span><Link to='/' onClick={logout}> Logout</Link></span>
-  //       <hr></hr>
-  //     </>
-  //   )
-  // }
+  const Nav = () => {
+    return (
+      <>
+        <span><Link to='/' onClick={logout}> Logout</Link></span>
+        <hr></hr>
+      </>
+    )
+  }
 
   async function getGameDetails (quizzes) {
     setGamesList([]);
@@ -107,7 +108,6 @@ export default function Home () {
         setErrorMsg(data.error);
         throw new Error('Failed to create new game.');
       }
-      // const data = await res.json();
       const newGame = { id: data.quiz_id, name: newGameName, createdAt: new Date().toISOString() };
       setGamesList(prevGamesList => [...prevGamesList, newGame].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       setNewGameName('');
@@ -132,7 +132,6 @@ export default function Home () {
         {gamesList.map((game) => (
           <Grid item xs={12} sm={6} md={4} key={`${game.id}+${game.name}`}>
             <GameCard
-              // gameId={game.id}
               keyId={game.id}
               title={game.name}
               numQuestions={game.questions ? game.questions.length : 0}
@@ -184,7 +183,7 @@ export default function Home () {
 
     if (!res.ok) {
       setError(true);
-      setErrorMsg(data.error);
+      setErrorMsg(data.error === 'Quiz already has active session' ? 'Game is already in progress' : data.error);
       throw new Error(data.error);
     } else {
       const sessionRes = await fetch('http://localhost:5005/admin/quiz/' + gameID, {
@@ -195,31 +194,30 @@ export default function Home () {
         }
       });
       const sessionData = await sessionRes.json();
-
+      console.log(sessionData.active);
       if (!res.ok) {
         setError(true);
         setErrorMsg(data.error);
         throw new Error(data.error);
       } else {
-        const link = 'http://localhost:5005/play/join' + sessionData.active;
-        setStartGameLink(link);
-        setStartGameName(title);
+        console.log('starting game...');
+        console.log(sessionData);
+        setGameStarted(true);
+        setSessionId(sessionData.active);
+        setSessionName(sessionData.name)
+        handleOpenLinkPopup();
       }
     }
   }
+  const handleOpenLinkPopup = () => {
+    console.log('setting status of linkpopup to TRUE');
+    setOpenLinkPopup(true);
+  };
 
-  const StartGamePop = ({ title, link }) => {
-    if (title.length === 0 || link.length === 0) {
-      return;
-    }
-    handleClickOpen();
-    return (
-      <GameStartPop
-        title={title}
-        link={link}
-      />
-    )
-  }
+  const closeLinkPopup = () => {
+    console.log('setting status of linkpop to FALSE');
+    setOpenLinkPopup(false);
+  };
 
   async function logout () {
     console.log(token);
@@ -252,7 +250,6 @@ export default function Home () {
 
   return (
     <>
-      {/* <Nav logout={logout} /> */}
       <Nav />
       {fetchNoti
         ? (<>
@@ -276,14 +273,17 @@ export default function Home () {
           <></>
           )
       }
-      {/* <Nav isLoggedIn={isLoggedIn} handleLogout={handleLogout} /> */}
-      {/* <Navbar isLoggedIn={isLoggedIn} handleLogout={handleLogout} fetchError={fetchError} errorMsg={errorMsg} /> */}
+
       <div>
         <div>Create new game: <input value={newGameName} onChange={(e) => setNewGameName(e.target.value)} /></div>
         <button onClick={createNewGame}>Submit</button>
       </div>
       <MemoizedGamesList gamesList={gamesList} />
-      <StartGamePop title={startGameName} link={startGameLink}/>
+
+      {/* NOTE: The popup for the session URL can only be shown once right after clicking start and cannot be shown again if admin closes the popup */}
+      {gameStarted && (
+      <LinkPopup gameTitle={sessionName} sessionId={sessionId} open={openLinkPopup} close={closeLinkPopup} />
+      )}
     </>
   )
 }

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Typography, Button, Modal } from '@material-ui/core';
 import { Stack } from '@mui/material';
-// import Navbar from './NavBar';
 
 export default function EditGame () {
   const { id } = useParams(); // get the id parameter from the URL
