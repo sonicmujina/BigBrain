@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Typography } from '@material-ui/core';
 import Button from '@mui/material/Button';
@@ -12,6 +12,18 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
+import { styled } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
+import { v4 as uuidv4 } from 'uuid';
+
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+  border: '1px solid #bbb'
+}));
 
 export default function EditGame () {
   const { id } = useParams(); // get the id parameter from the URL
@@ -24,6 +36,7 @@ export default function EditGame () {
   const [notiMsg, setNotiMsg] = useState('');
   const [quizThumbnail, setThumbnail] = useState('null');
   const [newTitle, setNewTitle] = useState('');
+  const [qList, setQList] = useState([]);
 
   // Fetch game data
   useEffect(() => {
@@ -40,8 +53,9 @@ export default function EditGame () {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await res.json();
-        // console.log(data)
+        // console.log(data.questions);
         setQuiz(data);
+        setQList(data.questions);
         setNoti(true)
         setNotiMsg('Successfully gathered Game data!');
       } catch (error) {
@@ -180,6 +194,7 @@ export default function EditGame () {
   }
 
   const handleSubmitTitle = () => {
+    hideNoti();
     // Make a PUT request to update the quiz title
     fetch(`http://localhost:5005/admin/quiz/${id}`, {
       method: 'PUT',
@@ -195,14 +210,157 @@ export default function EditGame () {
         if (!res.ok) {
           throw new Error('Failed to update quiz title');
         }
+        setQuiz({ ...quiz, name: newTitle });
         handleClose();
+        setNoti(true);
+        setNotiMsg('Successfully changed title');
         return res.json();
       })
       .catch(error => {
         console.log(error);
         console.log('Could not update quiz title');
+        setError(true);
+        setErrorMsg(error.message);
+        setNotiMsg('Failed to change title');
       });
   };
+
+  function renderTitle () {
+    const quizTitle = quiz.name;
+    return (
+      <Grid container spacing={2} alignItems="center">
+      <Grid item>
+        <Typography variant="h4" component="h1">
+          {quizTitle} (ID: {id})
+        </Typography>
+      </Grid>
+      <Grid item xs>
+        <Button variant="contained" onClick={handleOpen} padding="100px">
+            Change Title
+          </Button>
+        <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Change Quiz Title</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Enter a new title for the quiz:
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="New Quiz Title"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={newTitle}
+            onChange={(event) => setNewTitle(event.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmitTitle}>Submit</Button>
+        </DialogActions>
+        </Dialog>
+      </Grid>
+    </Grid>
+    )
+  }
+
+  const addQ = () => {
+    hideNoti();
+    const newQuestion = { id: uuidv4(), text: 'New Question' }; // Generates a unique id using the uuidv library
+    const updatedQList = [...qList, newQuestion];
+    fetch(`http://localhost:5005/admin/quiz/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        questions: updatedQList,
+      })
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to update quiz questions');
+        }
+        setQList(updatedQList);
+        setNoti(true);
+        setNotiMsg('Successfully added a question!');
+        return res.json();
+      })
+      .catch(error => {
+        console.log(error);
+        console.log('Could not update quiz questions');
+        setError(true);
+        setErrorMsg('Failed to add question');
+      });
+  };
+
+  const handleEditQuestion = (index) => {
+    // TODO: Implement logic for editing question at specified index
+  };
+
+  const handleDeleteQuestion = (index) => {
+    hideNoti();
+    const newList = [...qList];
+    newList.splice(index, 1);
+    setQList(newList);
+
+    fetch(`http://localhost:5005/admin/quiz/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        questions: newList,
+      })
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to update quiz questions');
+        }
+        console.log()
+        setNoti(true);
+        setNotiMsg('Question deleted');
+        return res.json();
+      })
+      .catch(error => {
+        console.log(error);
+        console.log('Could not update quiz questions');
+        setError(true);
+        setErrorMsg('Failed to delete question');
+      });
+  };
+
+  const MemoizedQList = useCallback(({ qList }) => {
+    // console.log(qList);
+    if (!qList || qList.length === 0) {
+      return <div>No questions yet, create one!</div>;
+    }
+
+    return (
+      <>
+      {qList.map((q, i) => (
+          <Item key={i}>
+            <Typography variant="h6" component="h3" gutterBottom>
+              Question {i + 1}
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              {q.text}
+            </Typography>
+            <Button variant="outlined" color="primary" onClick={() => handleEditQuestion(i)}>
+              Edit
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={() => handleDeleteQuestion(i)}>
+              Delete
+            </Button>
+          </Item>
+      ))}
+      </>
+    );
+  }, [qList]);
 
   return (
     <>
@@ -233,42 +391,14 @@ export default function EditGame () {
       {quiz && (
         <>
           {renderThumbnail()}
-          <Typography variant="h4" component="h1">
-            {quiz.name} (ID: {id})
-            <Button variant="contained" onClick={handleOpen}>
-              Change Title
-            </Button>
-          </Typography>
-          <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Change Quiz Title</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Enter a new title for the quiz:
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="New Quiz Title"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={newTitle}
-              onChange={(event) => setNewTitle(event.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSubmitTitle}>Submit</Button>
-          </DialogActions>
-          </Dialog>
+          {renderTitle()}
 
-          <Button variant="contained" onClick={handleOpen}>
-            Open Modal
+          <Button variant="contained" onClick={addQ}>
+            Create question
           </Button>
         </>
       )}
-
+      <MemoizedQList qList={qList} />
       </Stack>
     </>
   );
