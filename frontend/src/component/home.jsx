@@ -23,6 +23,7 @@ export default function Home () {
   const [fetchNoti, setNoti] = useState(false);
   const [notiMsg, setNotiMsg] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameId, setGameId] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [sessionName, setSessionName] = useState('');
   const [openLinkPopup, setOpenLinkPopup] = useState(false);
@@ -31,6 +32,7 @@ export default function Home () {
   // Fetch the list of games on component mount and whenever the token changes or user clicks create new game submit btn
   useEffect(() => {
     async function fetchGames () {
+      console.log(token);
       const res = await fetch('http://localhost:5005/admin/quiz', {
         method: 'GET',
         headers: {
@@ -41,7 +43,6 @@ export default function Home () {
       const data = await res.json();
       const sortedQuizzes = data.quizzes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setGamesList(sortedQuizzes);
-      // setGamesList(data.quizzes);
 
       if (!res.ok) {
         setError(true);
@@ -124,7 +125,7 @@ export default function Home () {
   // Memoize GamesList component so that it only re-renders when its dependencies change i.e. gameList
   const MemoizedGamesList = useCallback(({ gamesList }) => {
     if (!gamesList || gamesList.length === 0) {
-      return <div>No games yet, create one!</div>;
+      return <div>No game yet, create one!</div>;
     }
 
     return (
@@ -204,6 +205,7 @@ export default function Home () {
       } else {
         console.log('starting game...');
         console.log(sessionData);
+        setGameId(gameID);
         setSessionId(sessionData.active);
         setSessionName(sessionData.name);
         handleOpenLinkPopup();
@@ -308,7 +310,7 @@ export default function Home () {
 
       {/* NOTE: The popup for the session URL can only be shown once right after clicking start and cannot be shown again if admin closes the popup */}
       {gameStarted && (
-      <LinkPopup gameTitle={sessionName} sessionId={sessionId} open={openLinkPopup} close={closeLinkPopup} />
+      <LinkPopup gameId={gameId} gameTitle={sessionName} sessionId={sessionId} open={openLinkPopup} close={closeLinkPopup} />
       )}
     </>
   )

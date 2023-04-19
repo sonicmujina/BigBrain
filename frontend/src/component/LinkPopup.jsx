@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 // import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
 
 // A styled component using custom styles for the Dialog component from Material-UI library.
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -36,7 +37,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-const LinkPopup = ({ gameTitle, sessionId, open, close }) => {
+const LinkPopup = ({ gameId, gameTitle, sessionId, open, close }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -72,6 +73,11 @@ const LinkPopup = ({ gameTitle, sessionId, open, close }) => {
             <Button autoFocus onClick={handleCopyLink}>
               Copy URL
             </Button>
+            <Link to={`/advanceGame/${sessionId}`} style={{ textDecoration: 'none' }}>
+              <Button autoFocus>
+                Go to control page
+              </Button>
+            </Link>
           </DialogActions>
         </BootstrapDialog>
         )

@@ -44,8 +44,12 @@ export default function GameCard (props) {
           ? (
               <Button size="small" onClick={() => startGame(keyId, title)}>Start</Button>
             )
-          : (
-            <Button size="small" onClick={() => stopGame(keyId, title)}>Stop</Button>
+          : (<>
+              <Button size="small" onClick={() => stopGame(keyId, title)}>Stop</Button>
+              <Link to={`/advanceGame/${keyId}`} style={{ textDecoration: 'none' }}>
+                <Button size="small">Control panel</Button>
+              </Link>
+            </>
             )
         }
         <Link to={`/editGame/${keyId}`} style={{ textDecoration: 'none' }}>
