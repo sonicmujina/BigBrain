@@ -297,9 +297,9 @@ export default function EditGame () {
       });
   };
 
-  const handleEditQuestion = (index) => {
-    // TODO: Implement logic for editing question at specified index
-  };
+  // const handleEditQuestion = (index) => {
+  //   // TODO: Implement logic for editing question at specified index
+  // };
 
   const handleDeleteQuestion = (index) => {
     hideNoti();
@@ -350,9 +350,14 @@ export default function EditGame () {
             <Typography variant="body1" gutterBottom>
               {q.text}
             </Typography>
-            <Button variant="outlined" color="primary" onClick={() => handleEditQuestion(i)}>
+            {/* <Button variant="outlined" color="primary" onClick={() => handleEditQuestion(i)}>
               Edit
-            </Button>
+            </Button> */}
+            <Link to={`/editQuestion/${id}/${q.id}`} style={{ textDecoration: 'none' }}>
+              <Button variant="outlined" color="primary">
+                Edit
+              </Button>
+            </Link>
             <Button variant="outlined" color="secondary" onClick={() => handleDeleteQuestion(i)}>
               Delete
             </Button>
@@ -387,7 +392,11 @@ export default function EditGame () {
           )
       }
     <Stack spacing={2}>
-      <Link to="/home">Back to Dashboard</Link>
+      <Link to="/home">
+        <Typography>
+          Back to Dashboard
+        </Typography>
+      </Link>
       {quiz && (
         <>
           {renderThumbnail()}
