@@ -4,6 +4,7 @@ import SignUp from './component/signup';
 import Home from './component/home';
 import EditGame from './component/EditGame';
 import GameAdvance from './component/GameAdvance';
+import EditQuestion from './component/EditQuestion';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 function App () {
@@ -16,7 +17,8 @@ function App () {
           <Route path="/" element={<Login />} />
           <Route path="/Home" element={<Home />} />
           <Route path="/editGame/:id" element={<EditGame />} />
-          <Route path="/advanceGame/:sessionId" element={<GameAdvance />} />
+          <Route path="/advanceGame/:qid" element={<GameAdvance />} />
+          <Route path="/editQuestion/:id/:qid" element={<EditQuestion />} />
         </Routes>
     </BrowserRouter>
     </>
