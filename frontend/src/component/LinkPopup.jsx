@@ -73,7 +73,7 @@ const LinkPopup = ({ gameId, gameTitle, sessionId, open, close }) => {
             <Button autoFocus onClick={handleCopyLink}>
               Copy URL
             </Button>
-            <Link to={`/advanceGame/${sessionId}`} style={{ textDecoration: 'none' }}>
+            <Link to={`/advanceGame/${gameId}`} style={{ textDecoration: 'none' }}>
               <Button autoFocus>
                 Go to control page
               </Button>
@@ -92,9 +92,17 @@ const LinkPopup = ({ gameId, gameTitle, sessionId, open, close }) => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus>
-            Yes
-          </Button>
+          <Link to={
+            {
+              pathname: `/advanceGame/${gameId}`,
+              state: `?data=${sessionId}`
+            }
+            }
+            style={{ textDecoration: 'none' }}>
+            <Button autoFocus>
+              Yes
+            </Button>
+          </Link>
           <Button autoFocus onClick={handleClose}>
             No
           </Button>
