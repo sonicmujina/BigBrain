@@ -7,8 +7,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+// import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
 
 // A styled component using custom styles for the Dialog component from Material-UI library.
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -36,7 +37,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-const LinkPopup = ({ gameTitle, sessionId, open, close }) => {
+const LinkPopup = ({ gameId, gameTitle, sessionId, open, close }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -50,28 +51,66 @@ const LinkPopup = ({ gameTitle, sessionId, open, close }) => {
   };
 
   return (
-    <BootstrapDialog open={open}>
-      <DialogTitle>
-        {gameTitle} | Session ID: {sessionId}
-        <IconButton aria-label="close" onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        <Typography gutterBottom>
-          To join the game, copy the following URL and share it with your friends:
-        </Typography>
-        <Typography variant="h6">
-          {`${window.location.origin}/play/join/${sessionId}`}
-        </Typography>
-        {copied && <Typography color="success">Link copied to clipboard!</Typography>}
-      </DialogContent>
-      <DialogActions>
-        <Button autoFocus onClick={handleCopyLink}>
-          Copy URL
-        </Button>
-      </DialogActions>
-    </BootstrapDialog>
+    <>
+    {sessionId.length !== 0
+      ? (
+        <BootstrapDialog open={open}>
+          <DialogTitle>
+            {gameTitle} | Session ID: {sessionId}
+            <IconButton aria-label="close" onClick={handleClose}>
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers>
+            <Typography gutterBottom>
+              To join the game, copy the following URL and share it with your friends:
+            </Typography>
+            <Typography variant="h6">
+              {`${window.location.origin}/play/join/${sessionId}`}
+            </Typography>
+            {copied && <Typography color="success">Link copied to clipboard!</Typography>}
+          </DialogContent>
+          <DialogActions>
+            <Button autoFocus onClick={handleCopyLink}>
+              Copy URL
+            </Button>
+            <Link to={`/advanceGame/${gameId}`} style={{ textDecoration: 'none' }}>
+              <Button autoFocus>
+                Go to control page
+              </Button>
+            </Link>
+          </DialogActions>
+        </BootstrapDialog>
+        )
+      : (
+        <BootstrapDialog open={open}>
+        <DialogTitle>
+          Game {gameTitle} has been stopped
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            Would you like to view the results?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Link to={
+            {
+              pathname: `/advanceGame/${gameId}`,
+              state: `?data=${sessionId}`
+            }
+            }
+            style={{ textDecoration: 'none' }}>
+            <Button autoFocus>
+              Yes
+            </Button>
+          </Link>
+          <Button autoFocus onClick={handleClose}>
+            No
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
+        )
+    }
+    </>
   );
 };
 
